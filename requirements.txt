@@ -5,11 +5,9 @@ joblib
 plotly
 shap
 matplotlib
-warnings
 missingno
-itertools
 shap
-sklearn
+scikit-learn
 mlxtend
 xgboost
 imblearn
