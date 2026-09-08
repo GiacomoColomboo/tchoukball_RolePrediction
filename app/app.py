@@ -84,12 +84,16 @@ with tab1:
     with col2:
         st.subheader("🔍 Spiegazione Decisionale (SHAP Waterfall)")
         X_trans = pipeline.named_steps['trans'].transform(input_df)
-        explainer = shap.LinearExplainer(pipeline.named_steps['classifier'], X_trans)
+        feature_names = [f.split('__')[-1] for f in pipeline.named_steps['trans'].get_feature_names_out()]
+        background = np.zeros((1, X_trans.shape[1]))
+        explainer = shap.LinearExplainer(pipeline.named_steps['classifier'], background, feature_names=feature_names)
         shap_val = explainer(X_trans)
         
-        fig, ax = plt.subplots(figsize=(8, 4))
-        shap.plots.waterfall(shap_val[0], show=True)
+        fig, ax = plt.subplots(figsize=(8, 5))
+        shap.plots.waterfall(shap_val[0], show=False)
+        plt.tight_layout()
         st.pyplot(fig)
+        plt.close(fig)
 
 with tab2:
     st.subheader("🕸️ Silhouette del Giocatore")
