@@ -32,13 +32,14 @@ st.sidebar.header("📋 Box-Score Partita")
 sex_choice = st.sidebar.selectbox("Genere / Categoria", options=["Maschile (0)", "Femminile (1)"])
 sex = 1 if "Femminile" in sex_choice else 0
 
-scored = st.sidebar.number_input("Punti Segnati (SCORED)", 0, 30, 8)
-defence = st.sidebar.number_input("Difese (DEFENCE)", 0, 20, 3)
-caught = st.sidebar.number_input("Prese (CAUGHT)", 0, 20, 2)
-dropped = st.sidebar.number_input("Palle Cadute (DROPPED)", 0, 20, 1)
-given_point = st.sidebar.number_input("Punti Concessi (GIVEN_POINT)", 0, 15, 1)
-foul = st.sidebar.number_input("Falli (FOUL)", 0, 15, 0)
-shot_pct = st.sidebar.slider("Percentuale Realizzativa (%SHOT_SCORED)", 0.0, 100.0, 75.0)
+scored = st.sidebar.number_input("Punti Segnati (SCORED)", 0, 100, 0)
+defence = st.sidebar.number_input("Difese (DEFENCE)", 0, 100, 0)
+caught = st.sidebar.number_input("Prese (CAUGHT)", 0, 100, 0)
+dropped = st.sidebar.number_input("Palle Cadute (DROPPED)", 0, 100, 0)
+given_point = st.sidebar.number_input("Punti Concessi (GIVEN_POINT)", 0, 100, 0)
+foul = st.sidebar.number_input("Falli (FOUL)", 0, 100, 0)
+shot_pct = st.sidebar.number_input("Percentuale Realizzativa (%SHOT_SCORED)", 0.0, 100.0, 0.0, step=0.1)
+shot_pct_radar = shot_pct / 10.0
 
 if advanced_data:
     # Calcolo metriche ingegnerizzate al volo
@@ -66,11 +67,15 @@ with tab1:
     
     # Inferenza
     prob_wing = pipeline.predict_proba(input_df)[0][1]
-    role = "Wing (Ala)" if prob_wing >= 0.5 else "Pivot"
+    role = "Wing" if prob_wing >= 0.5 else "Pivot"
     
     with col1:
-        st.metric(label="Ruolo Predetto", value=role, delta=f"{prob_wing*100:.1f}% Confidenza Ala")
-        st.progress(prob_wing)
+        if role == "Wing":
+            st.metric(label="Ruolo Predetto", value=role, delta=f"{prob_wing*100:.1f}% Confidenza Ala")
+            st.progress(prob_wing)
+        else:
+            st.metric(label="Ruolo Predetto", value=role, delta=f"{(1-prob_wing)*100:.1f}% Confidenza Pivot")
+            st.progress(1 - prob_wing)
         if advanced_data:
             st.write(f"**Indice Offensivo (OFF_DEF_RATIO):** `{input_df['OFF_DEF_RATIO'].values[0]:.2f}`")
             st.write(f"**Efficienza di Presa:** `{input_df['CATCH_EFFICIENCY'].values[0]*100:.1f}%`")
@@ -83,17 +88,17 @@ with tab1:
         shap_val = explainer(X_trans)
         
         fig, ax = plt.subplots(figsize=(8, 4))
-        shap.plots.waterfall(shap_val[0], show=False)
+        shap.plots.waterfall(shap_val[0], show=True)
         st.pyplot(fig)
 
 with tab2:
     st.subheader("🕸️ Silhouette del Giocatore")
     if advanced_data:
         categories = ['SCORED', 'DEFENCE', 'CAUGHT', 'DROPPED', '%SHOT_SCORED', 'OFF_DEF_RATIO', 'CATCH_EFFICIENCY', 'NET_POINTS']
-        values = [scored, defence, caught, dropped, shot_pct, input_df['OFF_DEF_RATIO'].values[0], input_df['CATCH_EFFICIENCY'].values[0], input_df['NET_POINTS'].values[0]]
+        values = [scored, defence, caught, dropped, shot_pct_radar, input_df['OFF_DEF_RATIO'].values[0], input_df['CATCH_EFFICIENCY'].values[0], input_df['NET_POINTS'].values[0]]
     else:
         categories = ['SCORED', 'DEFENCE', 'CAUGHT', 'DROPPED', '%SHOT_SCORED']
-        values = [scored, defence, caught, dropped, shot_pct]
+        values = [scored, defence, caught, dropped, shot_pct_radar]
     
     fig = go.Figure(data=go.Scatterpolar(r=values, theta=categories, fill='toself', name='Giocatore'))
     fig.update_layout(polar=dict(radialaxis=dict(visible=True)), showlegend=False)
