@@ -1,4 +1,4 @@
-streamlit 
+streamlit
 pandas
 numpy
 joblib
@@ -6,9 +6,8 @@ plotly
 shap
 matplotlib
 missingno
-shap
-scikit-learn
+scikit-learn==1.6.1
 mlxtend
 xgboost
-imblearn
+imbalanced-learn
 scipy
