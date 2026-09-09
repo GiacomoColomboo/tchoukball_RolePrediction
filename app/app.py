@@ -96,14 +96,21 @@ with tab1:
         plt.close(fig)
 
 with tab2:
-    st.subheader("🕸️ Silhouette del Giocatore")
-    if advanced_data:
-        categories = ['SCORED', 'DEFENCE', 'CAUGHT', 'DROPPED', '%SHOT_SCORED', 'OFF_DEF_RATIO', 'CATCH_EFFICIENCY', 'NET_POINTS']
-        values = [scored, defence, caught, dropped, shot_pct_radar, input_df['OFF_DEF_RATIO'].values[0], input_df['CATCH_EFFICIENCY'].values[0], input_df['NET_POINTS'].values[0]]
-    else:
-        categories = ['SCORED', 'DEFENCE', 'CAUGHT', 'DROPPED', '%SHOT_SCORED']
-        values = [scored, defence, caught, dropped, shot_pct_radar]
-    
-    fig = go.Figure(data=go.Scatterpolar(r=values, theta=categories, fill='toself', name='Giocatore'))
-    fig.update_layout(polar=dict(radialaxis=dict(visible=True)), showlegend=False)
-    st.plotly_chart(fig, use_container_width=True)
+    col1, col2 = st.columns([1, 1])
+
+    with col1:
+        st.subheader("🕸️ Silhouette del Giocatore")
+        if advanced_data:
+            categories = ['SCORED', 'DEFENCE', 'CAUGHT', 'DROPPED', '%SHOT_SCORED', 'OFF_DEF_RATIO', 'CATCH_EFFICIENCY', 'NET_POINTS']
+            values = [scored, defence, caught, dropped, shot_pct_radar, input_df['OFF_DEF_RATIO'].values[0], input_df['CATCH_EFFICIENCY'].values[0], input_df['NET_POINTS'].values[0]]
+        else:
+            categories = ['SCORED', 'DEFENCE', 'CAUGHT', 'DROPPED', '%SHOT_SCORED']
+            values = [scored, defence, caught, dropped, shot_pct_radar]
+
+        fig = go.Figure(data=go.Scatterpolar(r=values, theta=categories, fill='toself', name='Giocatore'))
+        fig.update_layout(polar=dict(radialaxis=dict(visible=True)), showlegend=False)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        st.subheader("📊 Archetype del Giocatore")
+        
