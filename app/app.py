@@ -7,6 +7,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import shap
 import matplotlib.pyplot as plt
+from sklearn.inspection import permutation_importance
+
+RANDOM_STATE = 42
 
 # Configurazione pagina
 st.set_page_config(page_title="Tchoukball Scouting Suite", page_icon="🤾", layout="wide")
@@ -15,17 +18,22 @@ st.title("🤾 Tchoukball Player Analytics & Role Predictor")
 st.markdown("Strumento di scouting predittivo e profilazione archetipi basato su Machine Learning ed Explainable AI.")
 
 # Caricamento modelli
+# Nel caricamento modelli (@st.cache_resource)
 @st.cache_resource
-def load_models(advanced_data=True):
+def load_all_models():
     models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "models")
-    if advanced_data:
-        pipeline = joblib.load(os.path.join(models_dir, 'trained_pipeline_advanced.joblib'))
-    else:
-        pipeline = joblib.load(os.path.join(models_dir, 'trained_pipeline.joblib'))
-    return pipeline
+    return {
+        'pipeline_adv': joblib.load(os.path.join(models_dir, 'trained_pipeline_advanced.joblib')),
+        'pipeline_base': joblib.load(os.path.join(models_dir, 'trained_pipeline.joblib')),
+        'gmm_mixed': joblib.load(os.path.join(models_dir, 'gmm_advanced_archetypes.joblib')),
+        'gmm_m': joblib.load(os.path.join(models_dir, 'gmm_advanced_m_archetypes.joblib')),
+        'gmm_w': joblib.load(os.path.join(models_dir, 'gmm_advanced_w_archetypes.joblib'))
+    }
+
+models = load_all_models()
 
 advanced_data = st.sidebar.checkbox("Mostra Metriche Avanzate", value=True)
-pipeline = load_models(advanced_data=advanced_data)
+pipeline = models['pipeline_adv'] if advanced_data else models['pipeline_base']
 
 # Sidebar: Input statistiche giocatore
 st.sidebar.header("📋 Box-Score Partita")
@@ -68,6 +76,7 @@ with tab1:
     # Inferenza
     prob_wing = pipeline.predict_proba(input_df)[0][1]
     role = "Wing" if prob_wing >= 0.5 else "Pivot"
+    y = np.array([1 if role == "Wing" else 0])
     
     with col1:
         if role == "Wing":
@@ -112,5 +121,48 @@ with tab2:
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        st.subheader("📊 Archetype del Giocatore")
+        st.subheader("🎯 Profilazione Archetipica")
+        
+        # Preparazione feature avanzate e pesi fissi derivati dalla modellazione
+        input_df_adv = pd.DataFrame([{
+            'SCORED': scored, 'DEFENCE': defence, 'CAUGHT': caught, 'DROPPED': dropped,
+            'GIVEN_POINT': given_point, 'FOUL': foul, '%SHOT_SCORED': shot_pct,
+            'OFF_DEF_RATIO': scored / (defence + caught + 1.0),
+            'CATCH_EFFICIENCY': caught / (caught + dropped + 1.0),
+            'NET_POINTS': scored - given_point,
+            'OFF_LOAD_SHARE': scored / (scored + defence + caught + given_point + foul + 1.0),
+            'ERROR_PRONENESS': (foul + given_point) / (scored + defence + caught + 1.0),
+            'SEX': sex
+        }])
+        
+        X_trans_adv = models['pipeline_adv'].named_steps['trans'].transform(input_df_adv)
+        weights_advanced = np.array([0.0, 0.0, 6.1963, 0.0, 0.0873, 0.022, 0.1277, 0.0, 0.4154, 0.0, 5.5438, 0.6076, 0.0])
+
+        # 1. Inferenza cluster Mixed
+        X_weighted_mixed = np.asarray(X_trans_adv) * np.sqrt(weights_advanced)
+        cluster_mixed_id = models['gmm_mixed'].predict(X_weighted_mixed)[0]
+        
+        # 2. Inferenza cluster Singola Categoria (Men / Women)
+        X_trans_nosex = np.delete(np.asarray(X_trans_adv), -1, axis=1)
+        X_weighted_gender = X_trans_nosex * np.sqrt(weights_advanced[:-1])
+        
+        if sex == 0:
+            cluster_gender_id = models['gmm_m'].predict(X_weighted_gender)[0]
+            cat_name = "Maschile"
+        else:
+            cluster_gender_id = models['gmm_w'].predict(X_weighted_gender)[0]
+            cat_name = "Femminile" 
+            
+        # Testo descrittivo richiesto
+        st.markdown(f"""
+        ### 🌐 Inquadramento Mixed
+        Per una competizione **Mixed**, questo giocatore fa parte dell'archetipo **"{(f'Archetipo {cluster_mixed_id}')}"**, con uno stile di gioco comparabile a.
+        
+        
+        ---
+        
+        ### 🏆 Inquadramento Categoria {cat_name}
+        Se si considera invece una competizione **non mixed** ({cat_name.lower()}), il profilo corrisponde all'archetipo **"{(f'Archetipo {cluster_gender_id}')}"**, simile a.
+        
+        """)
         
