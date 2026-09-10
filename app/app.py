@@ -24,12 +24,12 @@ def load_all_models(advanced_data=True, sex=0):
         pipeline = joblib.load(os.path.join(models_dir, 'trained_pipeline_advanced.joblib'))
         gmm_mixed = joblib.load(os.path.join(models_dir, 'gmm_advanced_archetypes.joblib'))
         gmm = joblib.load(os.path.join(models_dir, f'gmm_advanced_{"m" if sex == 0 else "w"}_archetypes.joblib'))
-        weights = joblib.load(os.path.join(models_dir, 'weights_advanced.npy'))
+        weights = np.load(os.path.join(models_dir, 'weights_advanced.npy'))
     else:
         pipeline = joblib.load(os.path.join(models_dir, 'trained_pipeline.joblib'))
         gmm_mixed = joblib.load(os.path.join(models_dir, 'gmm_archetypes.joblib'))
         gmm = joblib.load(os.path.join(models_dir, f'gmm_{"m" if sex == 0 else "w"}_archetypes.joblib'))
-        weights = joblib.load(os.path.join(models_dir, 'weights.npy'))
+        weights = np.load(os.path.join(models_dir, 'weights.npy'))
 
     return pipeline, gmm_mixed, gmm, weights
 
@@ -70,7 +70,6 @@ def page_1():
 
     button = st.button("Predict Role & Analyze Player")
     if button:
-        st.write("Navigating to Page2...")
         page_2(input_df, advanced_data, sex)
 
 def page_2(input_df, advanced_data, sex):
@@ -110,11 +109,6 @@ def page_2(input_df, advanced_data, sex):
             plt.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
-
-        button = st.button("Insert new Player Data")
-        if button:
-            st.write("Navigating to Page1...")
-            page_1()
 
     with tab2:
         col1, col2 = st.columns([1, 1])
@@ -163,10 +157,9 @@ def page_2(input_df, advanced_data, sex):
             
             """)
 
-        button = st.button("Insert new Player Data")
-        if button:
-            st.write("Navigating to Page1...")
-            page_1()
+    button = st.button("Insert new Player Data")
+    if button:
+        page_1()
 
 # Use Streamlit's built-in 'next' function to navigate between the pages
 if __name__ == "__main__":
