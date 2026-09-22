@@ -54,11 +54,11 @@ def page_1():
         input_df = pd.DataFrame([{
             'SCORED': scored, 'DEFENCE': defence, 'CAUGHT': caught, 'DROPPED': dropped,
             'GIVEN_POINT': given_point, 'FOUL': foul, '%SHOT_SCORED': shot_pct,
-            'OFF_DEF_RATIO': scored / (defence + caught + 1.0),
+            'OFF_DEF_RATIO': scored / (caught + 1.0),
             'CATCH_EFFICIENCY': caught / (caught + dropped + 1.0),
             'NET_POINTS': scored - given_point,
             'OFF_LOAD_SHARE': scored / (scored + defence + caught + given_point + foul + 1.0),
-            'ERROR_PRONENESS': (foul + given_point) / (scored + defence + caught + 1.0),
+            'ERROR_PRONENESS': (foul + given_point) / (given_point + foul + scored + defence + caught + 1.0),
             'SEX': sex
         }])
     else:
@@ -118,7 +118,7 @@ def page_2(input_df, advanced_data, sex):
 
             # Radar plot of the player
             input_df_for_radar = input_df.copy()
-            input_df_for_radar['%SHOT_SCORED'] = input_df_for_radar['%SHOT_SCORED'] / 100.0
+            input_df_for_radar['%SHOT_SCORED'] = input_df_for_radar['%SHOT_SCORED'] / 10.0
             input_df_for_radar.drop(columns=['SEX'], inplace=True)
             categories = list(input_df_for_radar.columns)
             values = input_df_for_radar.iloc[0].values.tolist()
