@@ -162,6 +162,6 @@ Once running, navigate to `http://localhost:8501` in your browser. Enter box-sco
 
 ## 👤 Author & Acknowledgments
 
-- **Author**: Giacomo Colombo ([@JackColombo](https://github.com/JackColombo))
+- **Author**: Giacomo Colombo ([@GiacomoColomboo](https://github.com/GiacomoColomboo))
 - **Project**: Final Project for *Machine Learning, Artificial Neural Network and Deep Learning (Mod. 1)*.
 - **Data Source**: Official match statistics collected from European and international Tchoukball competitions.
