@@ -20,7 +20,6 @@ An end-to-end Machine Learning, Explainable AI (XAI), and Unsupervised Clusterin
 - [Repository Structure](#-repository-structure)
 - [Installation & Setup](#-installation--setup)
 - [Running the Streamlit Application](#-running-the-streamlit-application)
-- [Identified Bugs & Known Issues](#-identified-bugs--known-issues)
 - [Author & Acknowledgments](#-author--acknowledgments)
 
 ---
