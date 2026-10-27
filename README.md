@@ -125,7 +125,7 @@ tchoukball_RolePrediction/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/JackColombo/tchoukball_RolePrediction.git
+git clone https://github.com/GiacomoColomboo/tchoukball_RolePrediction.git
 cd tchoukball_RolePrediction
 ```
 
